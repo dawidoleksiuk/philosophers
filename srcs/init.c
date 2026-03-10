@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 21:11:28 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/07 20:55:59 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/09 18:52:18 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,8 @@ static int	str_to_int(char *str, long *arg)
 	return (0);
 }
 
-int	data_init(int argc, char *argv[], t_data *data)
+int	argv_init(int argc, char *argv[], t_data *data)
 {
-	memset(data, 0, sizeof(t_data));
 	if (str_to_int(argv[1], &data->num_of_philos) != 0
 		|| data->num_of_philos > MAX_PHILO)
 		return (printf("Number of philosophers too high."
@@ -80,8 +79,50 @@ int	data_init(int argc, char *argv[], t_data *data)
 	}
 	else
 		data->num_of_times_to_eat = -1;
-	data->philo_array = malloc((data->num_of_philos + 1) * sizeof(t_philo));
-	if (!data->philo_array)
+	return (0);
+}
+
+int	philo_array_init(t_data *data, t_philo *philo_array)
+{
+	int	i;
+
+	i = 0;
+	while (i < data->num_of_philos)
+	{
+		memset(&philo_array[i], 0, sizeof(t_philo));
+		philo_array[i].philo_id = i + 1;
+		philo_array[i].data = data;
+		// printf("dt: %ld i: %d\n", (philo_array[i]).death_time, i);
+		i++;
+	}
+	return (0);
+}
+
+void	mutex_init(t_data *data, t_philo *philo_array)
+{
+	int	i;
+
+	i = 0;
+	pthread_mutex_init(&data->mutex_print, NULL);
+	pthread_mutex_init(&data->mutex_deathcheck, NULL);
+	while (i < data->num_of_philos)
+	{	
+		pthread_mutex_init(&philo_array[i].mutex_fork, NULL);
+		pthread_mutex_init(&philo_array[i].mutex_deathtime, NULL);
+		i++;
+	}
+}
+
+int	data_init(int argc, char *argv[], t_data *data, t_philo **philo_array)
+{
+	memset(data, 0, sizeof(t_data));
+	if (argv_init(argc, argv, data) != 0)
 		return (1);
+	*philo_array = malloc(data->num_of_philos * sizeof(t_philo));
+	if (!*philo_array)
+		return (1);
+	if (philo_array_init(data, *philo_array) != 0)
+		return (1);
+	mutex_init(data, *philo_array);
 	return (0);
 }

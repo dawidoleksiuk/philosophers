@@ -1,34 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   clean_exit.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/06 20:01:46 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/08 14:07:08 by doleksiu         ###   ########.fr       */
+/*   Created: 2026/03/09 18:19:22 by doleksiu          #+#    #+#             */
+/*   Updated: 2026/03/09 18:24:13 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
-int	get_time(long time)
+void	mutex_destroy(t_data *data, t_philo *philo_array)
 {
-	struct timeval start;
-	struct timeval end;
-	long	time_elapsed;
+	int	i;
 
-	gettimeofday(&start, NULL);
-	while (1)
-	{
-		usleep(500);
-		gettimeofday(&end, NULL);
-		time_elapsed = ((end.tv_sec - start.tv_sec) * 1000) + ((end.tv_usec - start.tv_usec) / 1000);
-		if (time_elapsed >= time)
-		{
-			// printf("%ld", time_elapsed);
-			return (1);
-		}
+	i = 0;
+	pthread_mutex_destroy(&data->mutex_print);
+	pthread_mutex_destroy(&data->mutex_deathcheck);
+	while (i < data->num_of_philos)
+	{	
+		pthread_mutex_destroy(&philo_array[i].mutex_fork);
+		pthread_mutex_destroy(&philo_array[i].mutex_deathtime);
+		i++;
 	}
-	return (0);
+}
+
+void	clean_exit(t_data *data, t_philo *philo_array)
+{
+	free(philo_array);
+	mutex_destroy(data, philo_array);
 }

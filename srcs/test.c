@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/30 18:40:39 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/02/07 12:57:19 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/08 14:14:20 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,11 @@
 // https://www.geeksforgeeks.org/linux-unix/mutex-lock-for-linux-thread-synchronization/
 
 
-typedef	struct s_data
-{
-	pthread_mutex_t *mutex;
-	int mails;
-} t_data;
+// typedef	struct s_data
+// {
+// 	pthread_mutex_t *mutex;
+// 	int mails;
+// } t_data;
 
 // void *routine(void *arg)
 // {
@@ -137,34 +137,50 @@ typedef	struct s_data
 
 // detached threads
 
-#define THREAD_NUM 2
+// #define THREAD_NUM 2
 
-void *routine(void *args)
+// void *routine(void *args)
+// {
+// 	sleep(1);
+// 	printf("Finished execution\n");
+// }
+
+// int main(int argc, char *argv[])
+// {
+// 	pthread_t th[THREAD_NUM];
+// 	int i;
+
+// 	i = 0; 
+// 	while (i < THREAD_NUM)
+// 	{
+// 		if (pthread_create(&th[i], NULL, &routine, NULL) != 0)
+// 			perror("Failed to create thread");
+// 		pthread_detach(th[i]);
+// 		i++;
+// 	}
+// 	// i = 0;
+// 	// while (i < THREAD_NUM)
+// 	// {
+// 	// 	if (pthread_join(th[i], NULL) != 0)
+// 	// 		perror("Failed to join thread");
+// 	// 	i++;
+// 	// }
+// 	pthread_exit(0);
+// }
+#include "../includes/philo.h"
+int	get_time(long time);
+
+int	main(void)
 {
-	sleep(1);
-	printf("Finished execution\n");
+	struct timeval start;
+	struct timeval end;
+	long	time_elapsed;
+
+	gettimeofday(&start, NULL);
+	usleep(10000000);
+	// get_time(10000);
+	gettimeofday(&end, NULL);
+	time_elapsed = ((end.tv_sec - start.tv_sec) * 1000) + ((end.tv_usec - start.tv_usec) / 1000);
+
+	printf("%ld\n", time_elapsed);
 }
-
-int main(int argc, char *argv[])
-{
-	pthread_t th[THREAD_NUM];
-	int i;
-
-	i = 0; 
-	while (i < THREAD_NUM)
-	{
-		if (pthread_create(&th[i], NULL, &routine, NULL) != 0)
-			perror("Failed to create thread");
-		pthread_detach(th[i]);
-		i++;
-	}
-	// i = 0;
-	// while (i < THREAD_NUM)
-	// {
-	// 	if (pthread_join(th[i], NULL) != 0)
-	// 		perror("Failed to join thread");
-	// 	i++;
-	// }
-	pthread_exit(0);
-}
-
