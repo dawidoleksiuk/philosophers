@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:34 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/10 17:10:57 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/11 20:43:13 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,18 @@
 
 void	print(t_data *data, int philo_id, char *str)
 {
+	int	died;
+
+
+	pthread_mutex_lock(&data->mutex_deathcheck);
+	died = data->someone_died;
+	pthread_mutex_unlock(&data->mutex_deathcheck);
 	pthread_mutex_lock(&data->mutex_print);
-	printf("%ld %d %s\n", data->time_elapsed, philo_id, str);
+	pthread_mutex_lock(&data->mutex_time_elapsed);
+	if (!died)
+		printf("%ld %d %s\n", data->time_elapsed, philo_id, str);
 	pthread_mutex_unlock(&data->mutex_print);
+	pthread_mutex_unlock(&data->mutex_time_elapsed);
 }	
 
 void	sleeping(t_data *data, int philo_id)
@@ -28,7 +37,6 @@ void	sleeping(t_data *data, int philo_id)
 void	eating(t_data *data, t_philo *philo_array, int philo_id)
 {
 	int i;	
-
 	i = philo_id - 1;
 	if (philo_id % 2 == 0)
 	{
@@ -45,6 +53,11 @@ void	eating(t_data *data, t_philo *philo_array, int philo_id)
 		pthread_mutex_lock(&philo_array[i].mutex_fork);
 		print(data, philo_id, "has taken a fork");
 	}
+	pthread_mutex_lock(&philo_array[i].mutex_deathtime);
+	pthread_mutex_lock(&data->mutex_time_elapsed);
+	philo_array[i].death_time = data->time_elapsed + data->time_to_die;
+	pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
+	pthread_mutex_unlock(&data->mutex_time_elapsed);
 	print(data, philo_id, "is eating");
 	usleep(data->time_to_eat * 1000);
 	pthread_mutex_unlock(&philo_array[i].mutex_fork);
@@ -53,9 +66,6 @@ void	eating(t_data *data, t_philo *philo_array, int philo_id)
 	else
 		pthread_mutex_unlock(&philo_array[i + 1].mutex_fork);
 	philo_array[i].eat_count++;
-	pthread_mutex_lock(&philo_array[i].mutex_deathtime);
-	philo_array[i].death_time = data->time_elapsed + data->time_to_die;
-	pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
 }
 
 void	*philo_simulation(void *arg)
@@ -65,31 +75,38 @@ void	*philo_simulation(void *arg)
 
 	philo = (t_philo *) arg;
 	data = philo->data;
+	philo->death_time = data->time_to_die;
+	usleep(1000);
+	if (philo->philo_id % 2 == 0  || philo->philo_id == data->num_of_philos)
+		usleep(300);
 	while (1)
 	{
+		pthread_mutex_lock(&data->mutex_time_elapsed);
 		if (data->time_elapsed > 0)
 		{
+			pthread_mutex_unlock(&data->mutex_time_elapsed);
 			if (philo->philo_id % 2 != 0 && philo->philo_id != data->num_of_philos)
 			{
-				eating(data, philo, philo->philo_id);
+				eating(data, data->philo_array, philo->philo_id);
 			}
-			sleeping(data, philo->philo_id);
 			if (philo->philo_id % 2 == 0  || philo->philo_id == data->num_of_philos)
 			{
-				eating(data, philo, philo->philo_id);
-			}
-			print(data, philo->philo_id, "is thinking");
-			pthread_mutex_lock(&data->mutex_deathcheck);
-			if (data->someone_died)
-			{
-				pthread_mutex_unlock(&data->mutex_deathcheck);
-				break ;
-			}
-			pthread_mutex_unlock(&data->mutex_deathcheck);
+				eating(data, data->philo_array, philo->philo_id);
+			}				
 		}
+		else
+			pthread_mutex_unlock(&data->mutex_time_elapsed);
+		pthread_mutex_lock(&data->mutex_deathcheck);
+		if (data->someone_died)
+		{
+			pthread_mutex_unlock(&data->mutex_deathcheck);
+			return (0);
+		}
+		pthread_mutex_unlock(&data->mutex_deathcheck);
 	}
 	return (0);
 }
+
 int	death_checker_loop(int i, t_data *data, t_philo *philo_array)
 {
 	int	died;
@@ -101,7 +118,7 @@ int	death_checker_loop(int i, t_data *data, t_philo *philo_array)
 		if (philo_array[i].death_time != 0 && philo_array[i].death_time <= data->time_elapsed)
 		{
 			died = 1;
-			print(data, i, "died");
+			print(data, philo_array[i].philo_id, "died");
 			printf("death time %ld\n", philo_array[i].death_time);
 			pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
 			break ; 
@@ -132,11 +149,16 @@ void	*death_checker(void *arg)
 	gettimeofday(&data->start, NULL);
 	while (1)
 	{
-		// printf("dch: %ld\n", time_elapsed);
 		gettimeofday(&data->current_time, NULL);
+		pthread_mutex_lock(&data->mutex_time_elapsed);
 		data->time_elapsed = ((data->current_time.tv_sec - data->start.tv_sec) * 1000) + ((data->current_time.tv_usec - data->start.tv_usec) / 1000);
+		// printf("dch: %ld\n", data->time_elapsed);
+		pthread_mutex_unlock(&data->mutex_time_elapsed);
 		if (death_checker_loop(0, data, philo_array) == 1)
+		{
 			break ;
+		}
+		usleep(750);
 	}
 	return (0);
 }

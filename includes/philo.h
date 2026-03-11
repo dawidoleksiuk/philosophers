@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:51 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/09 18:23:59 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/11 20:34:49 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 
 #define MAX_PHILO 200
 
+typedef struct s_philo t_philo;
+ 
 typedef struct s_data
 {
 	long num_of_philos;
@@ -29,14 +31,16 @@ typedef struct s_data
 	long num_of_times_to_eat;
 	pthread_mutex_t mutex_print;
 	pthread_mutex_t mutex_deathcheck;
+	pthread_mutex_t mutex_time_elapsed;
 	pthread_t checking_thread;
 	struct timeval start;
 	struct timeval current_time;
 	long	time_elapsed;
 	int	someone_died;
+	t_philo *philo_array;
 } t_data;
 
-typedef struct s_philo
+struct s_philo
 {
 	int	philo_id;
 	pthread_t thread_id;
@@ -45,7 +49,7 @@ typedef struct s_philo
 	long	death_time;
 	int	eat_count;
 	t_data *data;
-} t_philo;
+};
 
 //init.c
 int	data_validation(int argc, char *argv[]);

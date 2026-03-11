@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 18:19:22 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/09 18:24:13 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/11 19:56:08 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ void	mutex_destroy(t_data *data, t_philo *philo_array)
 	i = 0;
 	pthread_mutex_destroy(&data->mutex_print);
 	pthread_mutex_destroy(&data->mutex_deathcheck);
+	pthread_mutex_destroy(&data->mutex_time_elapsed);
 	while (i < data->num_of_philos)
 	{	
 		pthread_mutex_destroy(&philo_array[i].mutex_fork);
@@ -29,6 +30,6 @@ void	mutex_destroy(t_data *data, t_philo *philo_array)
 
 void	clean_exit(t_data *data, t_philo *philo_array)
 {
-	free(philo_array);
 	mutex_destroy(data, philo_array);
+	free(philo_array);
 }

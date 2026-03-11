@@ -6,7 +6,7 @@
 #    By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/29 19:52:22 by doleksiu          #+#    #+#              #
-#    Updated: 2026/03/10 17:13:17 by doleksiu         ###   ########.fr        #
+#    Updated: 2026/03/11 19:52:37 by doleksiu         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ INCS = $(INCS_DIR)/philo.h
 all: $(NAME)
  
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS)  $(OBJS) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 # -fsanitize=address
 
 # -fsanitize=thread
