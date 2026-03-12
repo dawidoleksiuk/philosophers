@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:51 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/11 20:34:49 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/12 20:58:54 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ struct s_philo
 	long	death_time;
 	int	eat_count;
 	t_data *data;
+	int first_fork;
+	int second_fork;
 };
 
 //init.c

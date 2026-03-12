@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 21:11:28 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/11 20:35:46 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/12 20:58:09 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,16 @@ int	philo_array_init(t_data *data, t_philo *philo_array)
 		memset(&philo_array[i], 0, sizeof(t_philo));
 		philo_array[i].philo_id = i + 1;
 		philo_array[i].data = data;
+		if (philo_array[i].philo_id % 2 == 0)
+		{
+			philo_array[i].first_fork = i;
+			philo_array[i].second_fork = (i + 1) % data->num_of_philos;
+		}
+		else
+		{
+			philo_array[i].first_fork = (i + 1) % data->num_of_philos;
+			philo_array[i].second_fork = i;
+		}
 		// printf("dt: %ld i: %d\n", (philo_array[i]).death_time, i);
 		i++;
 	}
