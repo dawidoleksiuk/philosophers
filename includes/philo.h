@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:51 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/14 13:20:53 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/14 18:20:06 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ typedef struct s_data
 	long num_of_times_to_eat;
 	pthread_mutex_t mutex_print;
 	pthread_mutex_t mutex_deathcheck;
-	pthread_mutex_t mutex_death_time;
 	pthread_t checking_thread;
 	struct timeval start;
 	struct timeval current_time;

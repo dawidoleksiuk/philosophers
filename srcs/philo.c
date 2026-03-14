@@ -6,36 +6,35 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:34 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/14 14:37:25 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/14 18:53:47 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
-void	print(t_data *data, int philo_id, char *str)
+int	print(t_data *data, int philo_id, char *str)
 {
 	struct timeval current_time;
 	long time;
 	int dead;
 
-	
-
-	pthread_mutex_lock(&data->mutex_deathcheck);
-	dead = data->someone_died;
-	pthread_mutex_unlock(&data->mutex_deathcheck);
+	gettimeofday(&current_time, NULL);
+	time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
 	pthread_mutex_lock(&data->mutex_print);
-	if (!dead)
+	if (!data->someone_died)
 	{
-		gettimeofday(&current_time, NULL);
-		time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
 		printf("%ld %d %s\n", time, philo_id, str);
+		pthread_mutex_unlock(&data->mutex_print);
+		return (0);
 	}
 	pthread_mutex_unlock(&data->mutex_print);
+	return (1);
 }	
 
 void	sleeping(t_data *data, int philo_id)
 {
-	print(data, philo_id, "is sleeping");
+	if (print(data, philo_id, "is sleeping"))
+		return ;
 	get_time(data->time_to_sleep);
 }
 
@@ -45,7 +44,6 @@ void	eating(t_data *data, t_philo *philo_array, int philo_id)
 	long time;
 	struct timeval current_time;
 
-	
 	i = philo_id - 1;
 	if (data->num_of_philos == 1)
 	{
@@ -59,16 +57,20 @@ void	eating(t_data *data, t_philo *philo_array, int philo_id)
 	print(data, philo_id, "has taken a fork");
 	pthread_mutex_lock(&philo_array[philo_array[i].second_fork].mutex_fork);
 	print(data, philo_id, "has taken a fork");
-	pthread_mutex_lock(&data->mutex_death_time);
 	gettimeofday(&current_time, NULL);
 	time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
-	philo_array[i].death_time = time + data->time_to_die;
-	pthread_mutex_unlock(&data->mutex_death_time);
-	print(data, philo_id, "is eating");
-	get_time(data->time_to_eat);
+	pthread_mutex_lock(&philo_array[i].mutex_deathtime);
+	if (time < philo_array[i].death_time)
+	{
+		philo_array[i].death_time = time + data->time_to_die;
+		pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
+		print(data, philo_id, "is eating");
+		get_time(data->time_to_eat);
+		philo_array[i].eat_count++;
+		// printf("philo %d ate\n", philo_id);
+	}
 	pthread_mutex_unlock(&philo_array[philo_array[i].second_fork].mutex_fork);
 	pthread_mutex_unlock(&philo_array[philo_array[i].first_fork].mutex_fork);
-	philo_array[i].eat_count++;
 }
 
 void	*philo_simulation(void *arg)
@@ -88,41 +90,20 @@ void	*philo_simulation(void *arg)
 		get_time(data->time_to_eat * 0.8);
 	while (1)
 	{
-
 		eating(data, data->philo_array, philo->philo_id);
 		if (data->num_of_philos == 1)
 			break ;
-		pthread_mutex_lock(&data->mutex_deathcheck);
-		if (data->someone_died)
-		{
-			pthread_mutex_unlock(&data->mutex_deathcheck);
-			break ;
-		}
-		pthread_mutex_unlock(&data->mutex_deathcheck);
 		sleeping(data, philo->philo_id);
-		pthread_mutex_lock(&data->mutex_deathcheck);
-		if (data->someone_died)
-		{
-			pthread_mutex_unlock(&data->mutex_deathcheck);
+		// gettimeofday(&current_time, NULL);
+		// time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
+		// pthread_mutex_lock(&philo->mutex_deathtime);
+		// // time_to_think = ((data->time_to_die - (philo->death_time - time)) * 0.5);
+		// pthread_mutex_unlock(&philo->mutex_deathtime);
+		if (print(data, philo->philo_id, "is thinking") == 1)
 			break ;
-		}
-		pthread_mutex_unlock(&data->mutex_deathcheck);
-		pthread_mutex_lock(&data->mutex_death_time);
-		gettimeofday(&current_time, NULL);
-		time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
-		time_to_think = ((data->time_to_die - (philo->death_time - time)) * 0.5);
-		pthread_mutex_unlock(&data->mutex_death_time);
-		print(data, philo->philo_id, "is thinking");
-		get_time(time_to_think);
-		pthread_mutex_lock(&data->mutex_deathcheck);
-		if (data->someone_died)
-		{
-			pthread_mutex_unlock(&data->mutex_deathcheck);
-			break ;
-		}
-		pthread_mutex_unlock(&data->mutex_deathcheck);
+		// get_time(1);
 	}
-	return (0);
+	return (NULL);
 }
 
 
@@ -143,28 +124,26 @@ void	*death_checker(void *arg)
 	{
 		if (i == data->num_of_philos)
 		{
-			get_time(2);
+			get_time(1);
 			// usleep(5000);
 			i = 0;
 		}
-		pthread_mutex_lock(&data->mutex_death_time);
 		gettimeofday(&current_time, NULL);
 		time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
-		if (philo_array[i].death_time != 0 && philo_array[i].death_time <= time)
+		pthread_mutex_lock(&philo_array[i].mutex_deathtime);
+		if (philo_array[i].death_time <= time)
 		{
 			died = 1;
+			pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
 			break ; 
 		}
-		pthread_mutex_unlock(&data->mutex_death_time);
+		pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
 		i++;
 	}
-	pthread_mutex_unlock(&data->mutex_death_time);
 	if (died)
 	{
-		pthread_mutex_lock(&data->mutex_deathcheck);
-		data->someone_died = died;
-		pthread_mutex_unlock(&data->mutex_deathcheck);
 		pthread_mutex_lock(&data->mutex_print);
+		data->someone_died = died;
 		printf("%ld %d died\n", time, philo_array[i].philo_id);
 		pthread_mutex_unlock(&data->mutex_print);
 	}
@@ -184,7 +163,6 @@ int	run_simulation(t_data *data, t_philo *philo_array)
 	}
 	if (pthread_create(&data->checking_thread, NULL, &death_checker, philo_array) != 0)
  		return (1);
-	// printf("sim: %ld\n", data->time_elapsed);
 	i = 0;
 	while (i < data->num_of_philos)
 	{
