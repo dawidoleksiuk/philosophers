@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:34 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/14 18:53:47 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/14 19:12:20 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,14 +94,9 @@ void	*philo_simulation(void *arg)
 		if (data->num_of_philos == 1)
 			break ;
 		sleeping(data, philo->philo_id);
-		// gettimeofday(&current_time, NULL);
-		// time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
-		// pthread_mutex_lock(&philo->mutex_deathtime);
-		// // time_to_think = ((data->time_to_die - (philo->death_time - time)) * 0.5);
-		// pthread_mutex_unlock(&philo->mutex_deathtime);
 		if (print(data, philo->philo_id, "is thinking") == 1)
 			break ;
-		// get_time(1);
+		usleep(500);
 	}
 	return (NULL);
 }

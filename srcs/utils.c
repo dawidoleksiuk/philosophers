@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 20:01:46 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/14 18:51:29 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/14 19:19:18 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,8 @@ int	get_time(long time)
 		gettimeofday(&end, NULL);
 		time_elapsed = ((end.tv_sec - start.tv_sec) * 1000) + ((end.tv_usec - start.tv_usec) / 1000);
 		if (time_elapsed >= time)
-		{
-			// printf("%ld", time_elapsed);
-			return (1);
-		}
-		usleep(200);
+			break ;
+		usleep(1000);
 	}
 	return (0);
 }
