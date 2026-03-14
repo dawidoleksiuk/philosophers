@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:34 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/14 19:12:20 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/14 19:28:51 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ void	eating(t_data *data, t_philo *philo_array, int philo_id)
 		philo_array[i].eat_count++;
 		// printf("philo %d ate\n", philo_id);
 	}
+	else
+		pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
 	pthread_mutex_unlock(&philo_array[philo_array[i].second_fork].mutex_fork);
 	pthread_mutex_unlock(&philo_array[philo_array[i].first_fork].mutex_fork);
 }
@@ -85,9 +87,9 @@ void	*philo_simulation(void *arg)
 	philo = (t_philo *) arg;
 	data = philo->data;
 	if (philo->philo_id % 2 == 0)
-		get_time(data->time_to_eat * 0.5);
+		get_time(data->time_to_eat * 0.2);
 	if (philo->philo_id == data->num_of_philos && data->num_of_philos % 2 != 0)
-		get_time(data->time_to_eat * 0.8);
+		get_time(data->time_to_eat * 0.4);
 	while (1)
 	{
 		eating(data, data->philo_array, philo->philo_id);
