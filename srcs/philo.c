@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:34 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/12 21:11:30 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/14 14:37:25 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,56 +14,60 @@
 
 void	print(t_data *data, int philo_id, char *str)
 {
-	int	died;
+	struct timeval current_time;
 	long time;
+	int dead;
 
+	
 
 	pthread_mutex_lock(&data->mutex_deathcheck);
-	died = data->someone_died;
+	dead = data->someone_died;
 	pthread_mutex_unlock(&data->mutex_deathcheck);
-	pthread_mutex_lock(&data->mutex_time_elapsed);
-	time = data->time_elapsed;
-	pthread_mutex_unlock(&data->mutex_time_elapsed);
 	pthread_mutex_lock(&data->mutex_print);
-	if (!died)
+	if (!dead)
+	{
+		gettimeofday(&current_time, NULL);
+		time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
 		printf("%ld %d %s\n", time, philo_id, str);
+	}
 	pthread_mutex_unlock(&data->mutex_print);
 }	
 
 void	sleeping(t_data *data, int philo_id)
 {
 	print(data, philo_id, "is sleeping");
-	usleep(data->time_to_sleep * 1000);
+	get_time(data->time_to_sleep);
 }
 
 void	eating(t_data *data, t_philo *philo_array, int philo_id)
 {
 	int i;
+	long time;
+	struct timeval current_time;
 
+	
 	i = philo_id - 1;
 	if (data->num_of_philos == 1)
 	{
 		pthread_mutex_lock(&philo_array[i].mutex_fork);
 		print(data, philo_id, "has taken a fork");
-		usleep(data->time_to_die * 1000);
+		get_time(data->time_to_die);
 		pthread_mutex_unlock(&philo_array[i].mutex_fork);
+		return ;
 	}
 	pthread_mutex_lock(&philo_array[philo_array[i].first_fork].mutex_fork);
 	print(data, philo_id, "has taken a fork");
 	pthread_mutex_lock(&philo_array[philo_array[i].second_fork].mutex_fork);
 	print(data, philo_id, "has taken a fork");
+	pthread_mutex_lock(&data->mutex_death_time);
+	gettimeofday(&current_time, NULL);
+	time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
+	philo_array[i].death_time = time + data->time_to_die;
+	pthread_mutex_unlock(&data->mutex_death_time);
 	print(data, philo_id, "is eating");
-	pthread_mutex_lock(&philo_array[i].mutex_deathtime);
-	pthread_mutex_lock(&data->mutex_time_elapsed);
-	philo_array[i].death_time = data->time_elapsed + data->time_to_die;
-	pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
-	pthread_mutex_unlock(&data->mutex_time_elapsed);
-	usleep(data->time_to_eat * 1000);
-	pthread_mutex_unlock(&philo_array[i].mutex_fork);
-	if (philo_id == data->num_of_philos)
-		pthread_mutex_unlock(&philo_array[0].mutex_fork);
-	else
-		pthread_mutex_unlock(&philo_array[i + 1].mutex_fork);
+	get_time(data->time_to_eat);
+	pthread_mutex_unlock(&philo_array[philo_array[i].second_fork].mutex_fork);
+	pthread_mutex_unlock(&philo_array[philo_array[i].first_fork].mutex_fork);
 	philo_array[i].eat_count++;
 }
 
@@ -72,39 +76,49 @@ void	*philo_simulation(void *arg)
 	t_philo *philo;
 	t_data *data;
 	int time_to_think;
+		long time;
+	struct timeval current_time;
 
+	
 	philo = (t_philo *) arg;
 	data = philo->data;
-	philo->death_time = data->time_to_die;
 	if (philo->philo_id % 2 == 0)
-		usleep(data->time_to_eat * 1000 * 0.5);
+		get_time(data->time_to_eat * 0.5);
 	if (philo->philo_id == data->num_of_philos && data->num_of_philos % 2 != 0)
-		usleep(data->time_to_eat * 1000 * 0.8);
+		get_time(data->time_to_eat * 0.8);
 	while (1)
 	{
-		if (philo->philo_id % 2 != 0 && philo->philo_id != data->num_of_philos)
-		{
-			eating(data, data->philo_array, philo->philo_id);
-		}
-		if (philo->philo_id % 2 == 0  || philo->philo_id == data->num_of_philos)
-		{
-			eating(data, data->philo_array, philo->philo_id);
-		}
-		sleeping(data, philo->philo_id);
-		print(data, philo->philo_id, "is thinking");
-		pthread_mutex_lock(&philo->mutex_deathtime);
-		pthread_mutex_lock(&data->mutex_time_elapsed);
-		if (philo->philo_id % 2 == 0)
-			time_to_think = ((data->time_to_die - (data->time_elapsed - philo->death_time)) * 0.5);
-		// printf("time to think %d philo %d \n", time_to_think, philo->philo_id);
-		pthread_mutex_unlock(&philo->mutex_deathtime);
-		pthread_mutex_unlock(&data->mutex_time_elapsed);
-		usleep(time_to_think);
+
+		eating(data, data->philo_array, philo->philo_id);
+		if (data->num_of_philos == 1)
+			break ;
 		pthread_mutex_lock(&data->mutex_deathcheck);
 		if (data->someone_died)
 		{
 			pthread_mutex_unlock(&data->mutex_deathcheck);
-			return (0);
+			break ;
+		}
+		pthread_mutex_unlock(&data->mutex_deathcheck);
+		sleeping(data, philo->philo_id);
+		pthread_mutex_lock(&data->mutex_deathcheck);
+		if (data->someone_died)
+		{
+			pthread_mutex_unlock(&data->mutex_deathcheck);
+			break ;
+		}
+		pthread_mutex_unlock(&data->mutex_deathcheck);
+		pthread_mutex_lock(&data->mutex_death_time);
+		gettimeofday(&current_time, NULL);
+		time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
+		time_to_think = ((data->time_to_die - (philo->death_time - time)) * 0.5);
+		pthread_mutex_unlock(&data->mutex_death_time);
+		print(data, philo->philo_id, "is thinking");
+		get_time(time_to_think);
+		pthread_mutex_lock(&data->mutex_deathcheck);
+		if (data->someone_died)
+		{
+			pthread_mutex_unlock(&data->mutex_deathcheck);
+			break ;
 		}
 		pthread_mutex_unlock(&data->mutex_deathcheck);
 	}
@@ -112,54 +126,47 @@ void	*philo_simulation(void *arg)
 }
 
 
-int	is_dead(int i, t_data *data, t_philo *philo_array)
+void	*death_checker(void *arg)
 {
+	struct timeval current_time;
+	t_philo *philo_array;
+	t_data *data;
+	int i;
 	int	died;
+	long time;
 
+	philo_array = (t_philo *) arg;
+	data = philo_array[0].data;
+	i = 0;
 	died = 0;
-	while (i < data->num_of_philos)
+	while (1)
 	{
-		pthread_mutex_lock(&philo_array[i].mutex_deathtime);
-		pthread_mutex_lock(&data->mutex_time_elapsed);
-		if (philo_array[i].death_time != 0 && philo_array[i].death_time <= data->time_elapsed)
+		if (i == data->num_of_philos)
 		{
-			pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
-			pthread_mutex_unlock(&data->mutex_time_elapsed);
+			get_time(2);
+			// usleep(5000);
+			i = 0;
+		}
+		pthread_mutex_lock(&data->mutex_death_time);
+		gettimeofday(&current_time, NULL);
+		time = ((current_time.tv_sec - data->start.tv_sec) * 1000) + ((current_time.tv_usec - data->start.tv_usec) / 1000);
+		if (philo_array[i].death_time != 0 && philo_array[i].death_time <= time)
+		{
 			died = 1;
-			print(data, philo_array[i].philo_id, "died");
 			break ; 
 		}
-		pthread_mutex_unlock(&philo_array[i].mutex_deathtime);
-		pthread_mutex_unlock(&data->mutex_time_elapsed);
+		pthread_mutex_unlock(&data->mutex_death_time);
 		i++;
 	}
+	pthread_mutex_unlock(&data->mutex_death_time);
 	if (died)
 	{
 		pthread_mutex_lock(&data->mutex_deathcheck);
 		data->someone_died = died;
 		pthread_mutex_unlock(&data->mutex_deathcheck);
-		return (1);
-	}
-	return (0);
-}
-
-void	*death_checker(void *arg)
-{
-	t_philo *philo_array;
-	t_data *data;
-
-	philo_array = (t_philo *) arg;
-	data = philo_array[0].data;
-	gettimeofday(&data->start, NULL);
-	while (1)
-	{
-		gettimeofday(&data->current_time, NULL);
-		pthread_mutex_lock(&data->mutex_time_elapsed);
-		data->time_elapsed = ((data->current_time.tv_sec - data->start.tv_sec) * 1000) + ((data->current_time.tv_usec - data->start.tv_usec) / 1000);
-		pthread_mutex_unlock(&data->mutex_time_elapsed);
-		if (is_dead(0, data, philo_array))
-			break ;
-		usleep(750);
+		pthread_mutex_lock(&data->mutex_print);
+		printf("%ld %d died\n", time, philo_array[i].philo_id);
+		pthread_mutex_unlock(&data->mutex_print);
 	}
 	return (0);
 }

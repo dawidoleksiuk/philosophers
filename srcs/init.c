@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 21:11:28 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/12 20:58:09 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/14 13:21:24 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ int	philo_array_init(t_data *data, t_philo *philo_array)
 	{
 		memset(&philo_array[i], 0, sizeof(t_philo));
 		philo_array[i].philo_id = i + 1;
+		philo_array[i].death_time = data->time_to_die;
 		philo_array[i].data = data;
 		if (philo_array[i].philo_id % 2 == 0)
 		{
@@ -102,7 +103,12 @@ int	philo_array_init(t_data *data, t_philo *philo_array)
 			philo_array[i].first_fork = (i + 1) % data->num_of_philos;
 			philo_array[i].second_fork = i;
 		}
-		// printf("dt: %ld i: %d\n", (philo_array[i]).death_time, i);
+		if (philo_array[i].philo_id == data->num_of_philos)
+		{
+			philo_array[i].first_fork = (i + 1) % data->num_of_philos;
+			philo_array[i].second_fork = i;
+		}
+		printf("philo id: %d, fork 1: %d, fork 2: %d \n", philo_array[i].philo_id, philo_array[i].first_fork, philo_array[i].second_fork);
 		i++;
 	}
 	return (0);
@@ -115,7 +121,7 @@ void	mutex_init(t_data *data, t_philo *philo_array)
 	i = 0;
 	pthread_mutex_init(&data->mutex_print, NULL);
 	pthread_mutex_init(&data->mutex_deathcheck, NULL);
-	pthread_mutex_init(&data->mutex_time_elapsed, NULL);
+	pthread_mutex_init(&data->mutex_death_time, NULL);
 	while (i < data->num_of_philos)
 	{	
 		pthread_mutex_init(&philo_array[i].mutex_fork, NULL);
@@ -136,5 +142,6 @@ int	data_init(int argc, char *argv[], t_data *data, t_philo **philo_array)
 	if (philo_array_init(data, *philo_array) != 0)
 		return (1);
 	mutex_init(data, *philo_array);
+	gettimeofday(&data->start, NULL);
 	return (0);
 }
