@@ -6,12 +6,13 @@
 #    By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/29 19:52:22 by doleksiu          #+#    #+#              #
-#    Updated: 2026/03/14 14:15:35 by doleksiu         ###   ########.fr        #
+#    Updated: 2026/03/15 11:13:59 by doleksiu         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
 CFLAGS = -pthread -g -I$(INCS_DIR)
+
 NAME = philo
 
 SRC_DIR = ./srcs

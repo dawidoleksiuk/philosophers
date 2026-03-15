@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 21:11:28 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/14 18:29:57 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/15 18:10:44 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,22 +93,14 @@ int	philo_array_init(t_data *data, t_philo *philo_array)
 		philo_array[i].philo_id = i + 1;
 		philo_array[i].death_time = data->time_to_die;
 		philo_array[i].data = data;
-		if (philo_array[i].philo_id % 2 == 0)
-		{
-			philo_array[i].first_fork = i;
-			philo_array[i].second_fork = (i + 1) % data->num_of_philos;
-		}
-		else
-		{
-			philo_array[i].first_fork = (i + 1) % data->num_of_philos;
-			philo_array[i].second_fork = i;
-		}
+		philo_array[i].first_fork = i;
+		philo_array[i].second_fork = (i + 1) % data->num_of_philos;
 		if (philo_array[i].philo_id == data->num_of_philos)
 		{
 			philo_array[i].first_fork = (i + 1) % data->num_of_philos;
 			philo_array[i].second_fork = i;
 		}
-		printf("philo id: %d, fork 1: %d, fork 2: %d \n", philo_array[i].philo_id, philo_array[i].first_fork, philo_array[i].second_fork);
+		// printf("philo id: %d, fork 1: %d, fork 2: %d \n", philo_array[i].philo_id, philo_array[i].first_fork, philo_array[i].second_fork);
 		i++;
 	}
 	return (0);
