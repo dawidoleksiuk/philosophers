@@ -6,53 +6,36 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 21:11:28 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/15 18:10:44 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/17 20:35:16 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
-int	data_validation(int argc, char *argv[])
+int	run_simulation(t_data *data, t_philo *philo_array)
 {
-	int	i;
-	int	j;
-
-	i = 1;
-	if (argc != 5 && argc != 6)
-	{
-		printf("Usage: ./philo number_of_philosophers time_to_die[ms] "
-			"time_to_eat[ms] time_to_sleep[ms] "
-			"[number_of_times_each_philosopher_must_eat]\n");
-		return (1);
-	}
-	while (i < argc)
-	{
-		j = 0;
-		while (argv[i][j])
-		{
-			if (!(argv[i][j] >= '0' && argv[i][j] <= '9'))
-				return (printf("All arguments must be positive numbers.\n"), 1);
-			j++;
-		}
-		i++;
-	}
-	return (0);
-}
-static int	str_to_int(char *str, long *arg)
-{
-	int	i;
+	int		i;
+	int		res;
+	t_philo	*p;
 
 	i = 0;
-	*arg = 0;
-	while (str[i])
+	while (i < data->num_of_philos)
 	{
-		if (*arg > (UINT_MAX - (str[i] - '0')) / 10)
+		p = &philo_array[i];
+		if (pthread_create(&p->thread_id, NULL, &philo_simulation, p) != 0)
 			return (1);
-		*arg *= 10;
-		*arg += (str[i] - '0');
 		i++;
 	}
-	if (*arg > UINT_MAX / 1000)
+	if (pthread_create(&data->death_th, NULL, &death_checker, philo_array) != 0)
+		return (1);
+	i = 0;
+	while (i < data->num_of_philos)
+	{
+		if (pthread_join(philo_array[i].thread_id, NULL) != 0)
+			return (1);
+		i++;
+	}
+	if (pthread_join(data->death_th, NULL) != 0)
 		return (1);
 	return (0);
 }
@@ -93,14 +76,13 @@ int	philo_array_init(t_data *data, t_philo *philo_array)
 		philo_array[i].philo_id = i + 1;
 		philo_array[i].death_time = data->time_to_die;
 		philo_array[i].data = data;
-		philo_array[i].first_fork = i;
-		philo_array[i].second_fork = (i + 1) % data->num_of_philos;
+		philo_array[i].fork_one = i;
+		philo_array[i].fork_two = (i + 1) % data->num_of_philos;
 		if (philo_array[i].philo_id == data->num_of_philos)
 		{
-			philo_array[i].first_fork = (i + 1) % data->num_of_philos;
-			philo_array[i].second_fork = i;
+			philo_array[i].fork_one = (i + 1) % data->num_of_philos;
+			philo_array[i].fork_two = i;
 		}
-		// printf("philo id: %d, fork 1: %d, fork 2: %d \n", philo_array[i].philo_id, philo_array[i].first_fork, philo_array[i].second_fork);
 		i++;
 	}
 	return (0);
@@ -114,7 +96,7 @@ void	mutex_init(t_data *data, t_philo *philo_array)
 	pthread_mutex_init(&data->mutex_print, NULL);
 	pthread_mutex_init(&data->mutex_deathcheck, NULL);
 	while (i < data->num_of_philos)
-	{	
+	{
 		pthread_mutex_init(&philo_array[i].mutex_fork, NULL);
 		pthread_mutex_init(&philo_array[i].mutex_deathtime, NULL);
 		i++;

@@ -6,7 +6,7 @@
 #    By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/29 19:52:22 by doleksiu          #+#    #+#              #
-#    Updated: 2026/03/15 11:13:59 by doleksiu         ###   ########.fr        #
+#    Updated: 2026/03/17 20:22:13 by doleksiu         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ NAME = philo
 SRC_DIR = ./srcs
 OBJS_DIR = ./objs
 INCS_DIR = ./includes
-SRCS = philo.c init.c clean_exit.c utils.c
+SRCS = philo.c init.c clean_exit.c utils.c simulation.c
 OBJS = $(addprefix $(OBJS_DIR)/,$(SRCS:.c=.o))
 INCS = $(INCS_DIR)/philo.h
 

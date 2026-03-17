@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:51 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/14 18:20:06 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/17 20:34:55 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ typedef struct s_data
 	long num_of_times_to_eat;
 	pthread_mutex_t mutex_print;
 	pthread_mutex_t mutex_deathcheck;
-	pthread_t checking_thread;
+	pthread_t death_th;
 	struct timeval start;
 	struct timeval current_time;
 	int	someone_died;
@@ -47,16 +47,27 @@ struct s_philo
 	long	death_time;
 	int	eat_count;
 	t_data *data;
-	int first_fork;
-	int second_fork;
+	int fork_one;
+	int fork_two;
 };
 
+//simulation.c
+void	sleeping(t_data *data, int philo_id);
+void	eating(t_data *data, t_philo *philo_array, int philo_id);
+void	*philo_simulation(void *arg);
+void	*death_checker(void *arg);
+
 //init.c
+int	run_simulation(t_data *data, t_philo *philo_array);
 int	data_validation(int argc, char *argv[]);
 int	data_init(int argc, char *argv[], t_data *data, t_philo **philo_array);
 
 //utils.c
-int	get_time(long time);
+void	ft_sleep(long time);
+int	str_to_int(char *str, long *arg);
+int	data_validation(int argc, char *argv[]);
+int	print(t_data *data, int philo_id, char *str);
 
 //clean_exit
 void	clean_exit(t_data *data, t_philo *philo_array);
+
