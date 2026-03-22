@@ -6,17 +6,17 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 20:01:46 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/17 20:37:08 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/22 18:23:47 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
-void	ft_sleep(long time)
+void	ft_sleep_ms(long long time)
 {
 	struct timeval	start;
 	struct timeval	end;
-	long			time_elapsed;
+	long long		time_elapsed;
 
 	gettimeofday(&start, NULL);
 	usleep(time * 1000 * 0.7);
@@ -31,7 +31,7 @@ void	ft_sleep(long time)
 	}
 }
 
-int	str_to_int(char *str, long *arg)
+int	str_to_int(char *str, long long *arg)
 {
 	int	i;
 
@@ -77,19 +77,18 @@ int	data_validation(int argc, char *argv[])
 	return (0);
 }
 
-int	print(t_data *data, int philo_id, char *str)
+int	print_state(t_data *data, int philo_id, char *str)
 {
 	struct timeval	current_time;
-	long			time;
-	int				dead;
+	long long		time;
 
 	pthread_mutex_lock(&data->mutex_print);
 	if (!data->someone_died)
 	{
 		gettimeofday(&current_time, NULL);
-		time = (current_time.tv_sec - data->start.tv_sec) * 1000;
-		time += (current_time.tv_usec - data->start.tv_usec) / 1000;
-		printf("%ld %d %s\n", time, philo_id, str);
+		time = (current_time.tv_sec - data->start_time.tv_sec) * 1000;
+		time += (current_time.tv_usec - data->start_time.tv_usec) / 1000;
+		printf("%lld %d %s\n", time, philo_id, str);
 		pthread_mutex_unlock(&data->mutex_print);
 		return (0);
 	}

@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:34 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/17 20:35:51 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/22 17:19:24 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int	main(int argc, char *argv[])
 
 	philo_array = NULL;
 	if (data_validation(argc, argv) != 0
-		|| data_init(argc, argv, &data, &philo_array) != 0)
+		|| init_program_data(argc, argv, &data, &philo_array) != 0)
 	{
 		if (philo_array)
 			clean_exit(&data, philo_array);

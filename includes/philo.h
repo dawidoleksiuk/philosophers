@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:51 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/17 20:34:55 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/22 18:40:32 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,54 +20,61 @@
 
 #define MAX_PHILO 200
 
-typedef struct s_philo t_philo;
- 
+typedef struct s_philo	t_philo;
+
 typedef struct s_data
 {
-	long num_of_philos;
-	long time_to_die;
-	long time_to_eat;
-	long time_to_sleep;
-	long num_of_times_to_eat;
-	pthread_mutex_t mutex_print;
-	pthread_mutex_t mutex_deathcheck;
-	pthread_t death_th;
-	struct timeval start;
-	struct timeval current_time;
-	int	someone_died;
-	t_philo *philo_array;
-} t_data;
+	int				someone_died;
+	long long		num_of_philos;
+	long long		time_to_die;
+	long long		time_to_eat;
+	long long		time_to_sleep;
+	long long		num_of_times_to_eat;
+	struct timeval	start_time;
+	pthread_t		death_th;
+	pthread_mutex_t	mutex_print;
+	pthread_mutex_t	mutex_deathcheck;
+	t_philo			*philo_array;
+}				t_data;
 
 struct s_philo
 {
-	int	philo_id;
-	pthread_t thread_id;
+	int				philo_id;
+	pthread_t		thread_id;
+	int				eat_count;
+	long long		death_time;
 	pthread_mutex_t mutex_fork;
-	pthread_mutex_t mutex_deathtime;
-	long	death_time;
-	int	eat_count;
-	t_data *data;
-	int fork_one;
-	int fork_two;
+	pthread_mutex_t *left_fork;
+	pthread_mutex_t	*right_fork;
+	pthread_mutex_t	mutex_deathtime;
+	t_data			*data;
+
 };
 
 //simulation.c
 void	sleeping(t_data *data, int philo_id);
 void	eating(t_data *data, t_philo *philo_array, int philo_id);
-void	*philo_simulation(void *arg);
-void	*death_checker(void *arg);
+void	*philo_routine(void *arg);
+void	*monitor_death(void *arg);
 
 //init.c
-int	run_simulation(t_data *data, t_philo *philo_array);
-int	data_validation(int argc, char *argv[]);
-int	data_init(int argc, char *argv[], t_data *data, t_philo **philo_array);
+int		run_simulation(t_data *data, t_philo *philo_array);
+int		data_validation(int argc, char *argv[]);
+int		init_program_data(int argc, char *argv[], t_data *data, t_philo **philo_array);
 
 //utils.c
-void	ft_sleep(long time);
-int	str_to_int(char *str, long *arg);
-int	data_validation(int argc, char *argv[]);
-int	print(t_data *data, int philo_id, char *str);
+void	ft_sleep_ms(long long time);
+int		str_to_int(char *str, long long *arg);
+int		data_validation(int argc, char *argv[]);
+int		print_state(t_data *data, int philo_id, char *str);
 
 //clean_exit
 void	clean_exit(t_data *data, t_philo *philo_array);
 
+//monitor.c
+void	*monitor_routine(void *arg);
+
+//actions.c
+int	philo_sleep(t_data *data, int philo_id);
+void	philo_eat(t_data *data, t_philo *philo_array, int philo_id);
+int		philo_think(t_data *data, int philo_id);
