@@ -6,35 +6,41 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 18:14:49 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/22 18:27:51 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/23 22:57:45 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
+void	set_stop_flag(t_data *data)
+{
+	pthread_mutex_lock(&data->mutex_stop);
+	data->stop_simulation = 1;
+	pthread_mutex_unlock(&data->mutex_stop);
+}
+
 static int	check_if_dead(t_philo *philo_array, t_data *data, int *i)
 {
-	struct timeval	current_time;
 	long long		time;
 
-	gettimeofday(&current_time, NULL);
-	time = (current_time.tv_sec - data->start_time.tv_sec) * 1000;
-	time += (current_time.tv_usec - data->start_time.tv_usec) / 1000;
 	pthread_mutex_lock(&philo_array[*i].mutex_deathtime);
+	time = get_current_time(data);
 	if (philo_array[*i].death_time <= time)
 	{
 		pthread_mutex_unlock(&philo_array[*i].mutex_deathtime);
-		pthread_mutex_lock(&data->mutex_print);
-		data->someone_died = 1;
-		printf("%lld %d died\n", time, philo_array[*i].philo_id);
-		pthread_mutex_unlock(&data->mutex_print);
+		set_stop_flag(data);
 		return (1);
 	}
 	pthread_mutex_unlock(&philo_array[*i].mutex_deathtime);
-	if (data->num_of_times_to_eat == philo_array[*i].eat_count)
-		return (2);
 	return (0);
 }
+
+// int	check_if_full(t_philo *philo_array, t_data *data, int *i)
+// {
+
+
+// 	return (0);
+// }
 
 void	*monitor_routine(void *arg)
 {
@@ -53,7 +59,12 @@ void	*monitor_routine(void *arg)
 			i = 0;
 		}
 		if (check_if_dead(philo_array, data, &i))
+		{
+			print_state(data, philo_array[i].philo_id, "died");
 			break ;
+		}
+		// if (check_if_full(philo_array, data, &i))
+		// 	break ;
 		i++;
 	}
 	return (NULL);

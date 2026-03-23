@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/17 20:07:41 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/22 18:39:00 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/23 23:08:07 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,7 @@ void	*philo_routine(void *arg)
 	while (1)
 	{
 		philo_eat(data, data->philo_array, philo->philo_id);
-		philo->eat_count++;
-		if (data->num_of_philos == 1
-			|| data->num_of_times_to_eat == philo->eat_count)
+		if (data->num_of_philos == 1)
 			break ;
 		if (philo_sleep(data, philo->philo_id) != 0)
 			break ;

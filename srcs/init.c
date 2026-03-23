@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 21:11:28 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/22 18:23:29 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/23 21:49:34 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void	init_mutex(t_data *data, t_philo *philo_array)
 
 	i = 0;
 	pthread_mutex_init(&data->mutex_print, NULL);
-	pthread_mutex_init(&data->mutex_deathcheck, NULL);
+	pthread_mutex_init(&data->mutex_stop, NULL);
 	while (i < data->num_of_philos)
 	{
 		pthread_mutex_init(&philo_array[i].mutex_fork, NULL);

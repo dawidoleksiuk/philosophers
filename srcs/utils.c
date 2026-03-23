@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 20:01:46 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/22 18:23:47 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/23 23:10:20 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,17 @@ void	ft_sleep_ms(long long time)
 			break ;
 		usleep(1000);
 	}
+}
+
+long long	get_current_time(t_data *data)
+{
+	struct timeval	current_time;
+	long long		time;
+
+	gettimeofday(&current_time, NULL);
+	time = (current_time.tv_sec - data->start_time.tv_sec) * 1000;
+	time += (current_time.tv_usec - data->start_time.tv_usec) / 1000;
+	return (time);
 }
 
 int	str_to_int(char *str, long long *arg)
@@ -77,21 +88,25 @@ int	data_validation(int argc, char *argv[])
 	return (0);
 }
 
+int	check_stop(t_data *data)
+{
+	pthread_mutex_lock(&data->mutex_stop);
+	if (data->stop_simulation)
+	{
+		pthread_mutex_unlock(&data->mutex_stop);
+		return (1);
+	}
+	pthread_mutex_unlock(&data->mutex_stop);
+	return (0);
+}
+
 int	print_state(t_data *data, int philo_id, char *str)
 {
-	struct timeval	current_time;
 	long long		time;
 
 	pthread_mutex_lock(&data->mutex_print);
-	if (!data->someone_died)
-	{
-		gettimeofday(&current_time, NULL);
-		time = (current_time.tv_sec - data->start_time.tv_sec) * 1000;
-		time += (current_time.tv_usec - data->start_time.tv_usec) / 1000;
-		printf("%lld %d %s\n", time, philo_id, str);
-		pthread_mutex_unlock(&data->mutex_print);
-		return (0);
-	}
+	time = get_current_time(data);
+	printf("%lld %d %s\n", time, philo_id, str);
 	pthread_mutex_unlock(&data->mutex_print);
-	return (1);
+	return (0);
 }
