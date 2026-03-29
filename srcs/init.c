@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/06 21:11:28 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/23 21:49:34 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/29 12:21:33 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ int	parse_args(int argc, char *argv[], t_data *data)
 			return (printf("Number of times to eat too high. "
 					"It can be max 4294967\n"), 1);
 		}
+		if (data->num_of_times_to_eat == 0)
+			return (1);
 	}
 	else
 		data->num_of_times_to_eat = -1;

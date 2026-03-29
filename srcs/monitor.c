@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 18:14:49 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/23 22:57:45 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/29 18:14:19 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,22 @@ static int	check_if_dead(t_philo *philo_array, t_data *data, int *i)
 	return (0);
 }
 
-// int	check_if_full(t_philo *philo_array, t_data *data, int *i)
-// {
-
-
-// 	return (0);
-// }
+int	check_if_full(t_philo *philo_array, t_data *data, int *i)
+{
+	pthread_mutex_lock(&data->mutex_stop);
+	if (philo_array[*i].eat_count == data->num_of_times_to_eat)
+	{
+		data->finished_eating_count++;
+		if (data->finished_eating_count == data->num_of_philos)
+		{
+			pthread_mutex_unlock(&data->mutex_stop);
+			set_stop_flag(data);
+			return (1);
+		}
+	}
+	pthread_mutex_unlock(&data->mutex_stop);
+	return (0);
+}
 
 void	*monitor_routine(void *arg)
 {
@@ -57,14 +67,21 @@ void	*monitor_routine(void *arg)
 		{
 			usleep(500);
 			i = 0;
+			data->finished_eating_count = 0;
 		}
 		if (check_if_dead(philo_array, data, &i))
 		{
 			print_state(data, philo_array[i].philo_id, "died");
 			break ;
 		}
-		// if (check_if_full(philo_array, data, &i))
-		// 	break ;
+		if (data->num_of_times_to_eat > 0)
+		{
+			if (check_if_full(philo_array, data, &i))
+			{
+				print_state(data, philo_array[i].philo_id, "all philos finished eating");
+				break ;
+			}
+		}
 		i++;
 	}
 	return (NULL);

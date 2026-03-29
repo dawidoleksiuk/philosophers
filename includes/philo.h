@@ -6,7 +6,7 @@
 /*   By: doleksiu <doleksiu@student.42warsaw.pl>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 13:56:51 by doleksiu          #+#    #+#             */
-/*   Updated: 2026/03/23 22:38:48 by doleksiu         ###   ########.fr       */
+/*   Updated: 2026/03/29 12:25:46 by doleksiu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef struct s_data
 	long long		time_to_eat;
 	long long		time_to_sleep;
 	long long		num_of_times_to_eat;
+	int				finished_eating_count;
 	struct timeval	start_time;
 	pthread_t		death_th;
 	pthread_mutex_t	mutex_print;
@@ -78,5 +79,5 @@ void		*monitor_routine(void *arg);
 
 //actions.c
 int			philo_sleep(t_data *data, int philo_id);
-void		philo_eat(t_data *data, t_philo *philo_array, int philo_id);
+int		philo_eat(t_data *data, t_philo *philo_array, int philo_id);
 int			philo_think(t_data *data, int philo_id);
